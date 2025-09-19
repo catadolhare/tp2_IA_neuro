@@ -1,5 +1,6 @@
 import torch.nn as nn
 from agentes import Agent
+import numpy as np
 
 class Connect4State:
     def __init__(self): 
@@ -9,7 +10,8 @@ class Connect4State:
         Args:
             Definir qué hace a un estado de Connect4.
         """
-        pass
+        self.board = np.zeros((6, 7), dtype=int)  # Tablero de 6 filas y 7 columnas
+        self.current_player = 1  # Jugador 1 comienza
 
     def copy(self):  
         """
@@ -18,7 +20,10 @@ class Connect4State:
         Returns:
             Una nueva instancia de Connect4State con los mismos valores.
         """
-        pass
+        new_state = Connect4State()
+        new_state.board = self.board.copy()
+        new_state.current_player = self.current_player
+        return new_state
 
     def update_state(self):
         """
@@ -28,7 +33,7 @@ class Connect4State:
             ... (_type_): _description_
             ... (_type_): _description_
         """
-        pass
+        self.current_player = 2 if self.current_player == 1 else 1
 
     def __eq__(self, other):
         """
@@ -40,7 +45,7 @@ class Connect4State:
         Returns:
             True si los estados son iguales, False en caso contrario.
         """
-        pass
+        return np.array_equal(self.board, other.board) and self.current_player == other.current_player
 
     def __hash__(self): 
         """
@@ -49,15 +54,14 @@ class Connect4State:
         Returns:
             Hash del estado basado en el tablero y jugador actual.
         """
-        
-        pass
+        return hash((self.board.tobytes(), self.current_player))
 
     def __repr__(self):
         """
         Representación en string del estado.
         
         """
-        pass
+        return f"Player: {self.current_player}\nBoard:\n{self.board}"
 
 class Connect4Environment:
     def __init__(self):
