@@ -1,6 +1,7 @@
 import torch.nn as nn
 from agentes import Agent
 import numpy as np
+import torch.nn.functional as F
 
 class Connect4State:
     def __init__(self): 
@@ -172,7 +173,10 @@ class DQN(nn.Module):
             input_dim: Dimensión de entrada (número de features del estado).
             output_dim: Dimensión de salida (número de acciones posibles).
         """
-        pass
+        super(DQN, self).__init__()
+        self.fc1 = nn.Linear(input_dim, 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, output_dim)
 
     def forward(self, x):
         """
@@ -184,7 +188,10 @@ class DQN(nn.Module):
         Returns:
             Tensor de salida con los valores Q para cada acción.
         """
-        pass
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 
 class DeepQLearningAgent:
     def __init__(self, state_shape, n_actions, device, gamma, epsilon, epsilon_min, epsilon_decay, lr, batch_size, memory_size target_update_every): 
