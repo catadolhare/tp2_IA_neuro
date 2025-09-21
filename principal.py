@@ -25,15 +25,23 @@ class Connect4State:
         new_state.current_player = self.current_player
         return new_state
 
-    def update_state(self):
-        """
+    """def update_state(self):
+        """"""
         Modifica las variables internas del estado luego de una jugada.
 
         Args:
             ... (_type_): _description_
             ... (_type_): _description_
-        """
-        self.current_player = 2 if self.current_player == 1 else 1
+        """"""
+        self.current_player = 2 if self.current_player == 1 else 1"""
+
+    def update_state(self, col): #chat me dice que falta agregarle col para poder marcar donde se jugo
+        for row in range(5, -1, -1):
+            if self.board[row, col] == 0:
+                self.board[row, col] = self.current_player
+                self.current_player *= -1
+                return
+        raise ValueError("Columna llena")
 
     def __eq__(self, other):
         """
@@ -72,14 +80,19 @@ class Connect4Environment:
             Definir las variables de instancia de un ambiente de Connect4
 
         """
-        pass
+        self.state = Connect4State()
+        self.terminó_el_juego = False
+        self.ganador = None
 
     def reset(self):
         """
         Reinicia el ambiente a su estado inicial para volver a realizar un episodio.
         
         """
-        pass
+        self.state = Connect4State()
+        self.terminó_el_juego = False
+        self.ganador = None
+        return self.state
 
     def available_actions(self):
         """
@@ -88,7 +101,11 @@ class Connect4Environment:
         Returns:
             Lista de índices de columnas donde se puede colocar una ficha.
         """
-        pass
+        indices_col = []
+        for col in range(self.state.board.shape[1]):
+            if self.state.board[0, col] == 0:
+                indices_col.append(col)
+        return indices_col
 
     def step(self, action):
         """
@@ -101,14 +118,50 @@ class Connect4Environment:
             action: Acción elegida por un agente.
             
         """
-        pass
+        if self.done:
+            raise Exception("El juego ya terminó. Llama a reset() para reiniciar.")
+        # Realiza la jugada
+        self.state.update_state(action)
+        # Verifica si hay ganador
+        self.ganador = self.check_winner()
+        self.terminó_el_juego = self.winner is not None or len(self.available_actions()) == 0
+        reward = 0
+        if self.winner is not None:
+            reward = 1
+        elif self.done:
+            reward = 0.5  # Empate
+        return self.state.copy(), reward, self.done, self.winner
+    
+    def check_winner(self):
+        """
+        Chequea si hay un ganador en el tablero actual.
+        """
+        board = self.state.board
+        for r in range(6):
+            for c in range(7):
+                player = board[r, c]
+                if player == 0:
+                    continue
+                # Horizontal
+                if c <= 3 and all(board[r, c+i] == player for i in range(4)):
+                    return player
+                # Vertical
+                if r <= 2 and all(board[r+i, c] == player for i in range(4)):
+                    return player
+                # Diagonal \
+                if r <= 2 and c <= 3 and all(board[r+i, c+i] == player for i in range(4)):
+                    return player
+                # Diagonal /
+                if r <= 2 and c >= 3 and all(board[r+i, c-i] == player for i in range(4)):
+                    return player
+        return None
 
     def render(self):
         """
         Muestra visualmente el estado actual del tablero en la consola.
 
         """
-        pass
+        print(np.flip(self.state.board, 0))
 
 class DQN(nn.Module):
     def __init__(self, input_dim, output_dim): 
@@ -134,9 +187,7 @@ class DQN(nn.Module):
         pass
 
 class DeepQLearningAgent:
-    def __init__(self, state_shape, n_actions, device,
-                 gamma, epsilon, epsilon_min, epsilon_decay,
-                 lr, batch_size, memory_size target_update_every): 
+    def __init__(self, state_shape, n_actions, device, gamma, epsilon, epsilon_min, epsilon_decay, lr, batch_size, memory_size target_update_every): 
         """
         Inicializa el agente de aprendizaje por refuerzo DQN.
         
