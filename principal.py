@@ -1,3 +1,5 @@
+from random import random
+import torch
 import torch.nn as nn
 from agentes import Agent
 import numpy as np
@@ -194,7 +196,7 @@ class DQN(nn.Module):
         return x
 
 class DeepQLearningAgent:
-    def __init__(self, state_shape, n_actions, device, gamma, epsilon, epsilon_min, epsilon_decay, lr, batch_size, memory_size target_update_every): 
+    def __init__(self, state_shape, n_actions, device, gamma, epsilon, epsilon_min, epsilon_decay, lr, batch_size, memory_size, target_update_every): 
         """
         Inicializa el agente de aprendizaje por refuerzo DQN.
         
@@ -211,7 +213,26 @@ class DeepQLearningAgent:
             memory_size: Tamaño máximo de la memoria de experiencias.
             target_update_every: Frecuencia de actualización de la red objetivo.
         """
-        pass
+        self.state_shape = state_shape
+        self.n_actions = n_actions
+        self.device = device
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.epsilon_min = epsilon_min
+        self.epsilon_decay = epsilon_decay
+        self.lr = lr
+        self.batch_size = batch_size
+        self.memory_size = memory_size
+        self.target_update_every = target_update_every
+
+        self.policy_net = DQN(np.prod(state_shape), n_actions).to(device)
+        self.target_net = DQN(np.prod(state_shape), n_actions).to(device)
+        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.eval()
+
+        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
+        self.memory = []
+        self.steps_done = 0
 
     def preprocess(self, state):
         """
@@ -223,7 +244,8 @@ class DeepQLearningAgent:
         Returns:
             Tensor de PyTorch con el estado aplanado.
         """
-        pass
+        board = state.board.astype(np.float32).flatten()
+        return torch.tensor(board, dtype=torch.float32, device=self.device).unsqueeze(0)
 
     def select_action(self, state, valid_actions): 
         """
@@ -236,7 +258,17 @@ class DeepQLearningAgent:
         Returns:
             Índice de la acción seleccionada.
         """
-        pass
+        # Política epsilon-greedy
+        if np.random.rand() < self.epsilon:
+            return random.choice(valid_actions)
+        with torch.no_grad():
+            state_tensor = self.preprocess(state)
+            q_values = self.policy_net(state_tensor).cpu().numpy().flatten()
+            # Selecciona la acción válida con mayor valor Q
+            q_valid = [(a, q_values[a]) for a in valid_actions]
+            best_action = max(q_valid, key=lambda x: x[1])[0]
+            return best_action
+
 
     def store_transition(self, s, a, r, s_next, done):
         """
@@ -249,7 +281,9 @@ class DeepQLearningAgent:
             s_next: Siguiente estado.
             done: Si el episodio terminó.
         """
-        pass
+        if len(self.memory) >= self.memory_size:
+            self.memory.pop(0)
+        self.memory.append((s, a, r, s_next, done))
 
     def train_step(self): 
         """
@@ -258,13 +292,45 @@ class DeepQLearningAgent:
         Returns:
             Valor de la función de pérdida si se pudo entrenar, None en caso contrario.
         """
-        pass
+        if len(self.memory) < self.batch_size:
+            return None
+        batch = random.sample(self.memory, self.batch_size)
+        states, actions, rewards, next_states, dones = zip(*batch)
+
+        states = torch.cat([self.preprocess(s) for s in states])
+        actions = torch.tensor(actions, dtype=torch.long, device=self.device).unsqueeze(1)
+        rewards = torch.tensor(rewards, dtype=torch.float32, device=self.device).unsqueeze(1)
+        next_states = torch.cat([self.preprocess(s) for s in next_states])
+        dones = torch.tensor(dones, dtype=torch.float32, device=self.device).unsqueeze(1)
+
+        # Q(s,a)
+        q_values = self.policy_net(states).gather(1, actions)
+        # max_a' Q_target(s',a')
+        with torch.no_grad():
+            next_q_values = self.target_net(next_states).max(1)[0].unsqueeze(1)
+            target = rewards + self.gamma * next_q_values * (1 - dones)
+
+        loss = torch.nn.functional.mse_loss(q_values, target)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
+
+        # Actualiza la red objetivo cada cierto número de pasos
+        self.steps_done += 1
+        if self.steps_done % self.target_update_every == 0:
+            self.target_net.load_state_dict(self.policy_net.state_dict())
+
+        return loss.item()
+
 
     def update_epsilon(self):
         """
         Actualiza el valor de epsilon para reducir la exploración gradualmente.
         """
-        pass
+        # Decaimiento de epsilon
+        if self.epsilon > self.epsilon_min:
+            self.epsilon *= self.epsilon_decay
+            self.epsilon = max(self.epsilon, self.epsilon_min)
 
 class TrainedAgent(Agent):
     def __init__(self, model_path: str, state_shape: tuple, n_actions: int, device='cpu'):
@@ -277,7 +343,13 @@ class TrainedAgent(Agent):
             n_actions: Número de acciones posibles.
             device: Dispositivo para computación.
         """
-        pass
+        self.device = device
+        self.model = DQN(np.prod(state_shape), n_actions).to(device)
+        self.model.load_state_dict(torch.load(model_path, map_location=device))
+        self.model.eval()
+        self.state_shape = state_shape
+        self.n_actions = n_actions
+
 
     def play(self, state, valid_actions): 
         """
@@ -290,4 +362,11 @@ class TrainedAgent(Agent):
         Returns:
             Índice de la mejor acción según el modelo.
         """
-        pass
+        board = state.board.astype(np.float32).flatten()
+        state_tensor = torch.tensor(board, dtype=torch.float32, device=self.device).unsqueeze(0)
+        with torch.no_grad():
+            q_values = self.model(state_tensor).cpu().numpy().flatten()
+        # Solo considerar acciones válidas
+        q_valid = [(a, q_values[a]) for a in valid_actions]
+        best_action = max(q_valid, key=lambda x: x[1])[0]
+        return best_action
