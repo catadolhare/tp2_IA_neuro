@@ -1,4 +1,4 @@
-from random import random
+import random
 import torch
 import torch.nn as nn
 from agentes import Agent
@@ -6,14 +6,14 @@ import numpy as np
 import torch.nn.functional as F
 
 class Connect4State:
-    def __init__(self): 
+    def __init__(self, rows=6, cols=7): 
         """
         Inicializa el estado del juego Connect4.
         
         Args:
             Definir qué hace a un estado de Connect4.
         """
-        self.board = np.zeros((6, 7), dtype=int)  # Tablero de 6 filas y 7 columnas
+        self.board = np.zeros((rows, cols), dtype=int)  # Tablero de 6 filas y 7 columnas
         self.current_player = 1  # Jugador 1 comienza
 
     def copy(self):  
@@ -75,7 +75,7 @@ class Connect4State:
         return f"Player: {self.current_player}\nBoard:\n{self.board}"
 
 class Connect4Environment:
-    def __init__(self):
+    def __init__(self, rows=6, cols=7):
         """
         Inicializa el ambiente del juego Connect4.
         
@@ -84,8 +84,10 @@ class Connect4Environment:
 
         """
         self.state = Connect4State()
-        self.terminó_el_juego = False
-        self.ganador = None
+        self.done = False
+        self.winner = None
+        self.rows = rows
+        self.cols = cols
 
     def reset(self):
         """
@@ -93,8 +95,8 @@ class Connect4Environment:
         
         """
         self.state = Connect4State()
-        self.terminó_el_juego = False
-        self.ganador = None
+        self.done = False
+        self.winner = None
         return self.state
 
     def available_actions(self):
@@ -126,8 +128,8 @@ class Connect4Environment:
         # Realiza la jugada
         self.state.update_state(action)
         # Verifica si hay ganador
-        self.ganador = self.check_winner()
-        self.terminó_el_juego = self.winner is not None or len(self.available_actions()) == 0
+        self.winner = self.check_winner()
+        self.done = self.winner is not None or len(self.available_actions()) == 0
         reward = 0
         if self.winner is not None:
             reward = 1
@@ -225,12 +227,12 @@ class DeepQLearningAgent:
         self.memory_size = memory_size
         self.target_update_every = target_update_every
 
-        self.policy_net = DQN(np.prod(state_shape), n_actions).to(device)
+        self.q_network = DQN(np.prod(state_shape), n_actions).to(device)
         self.target_net = DQN(np.prod(state_shape), n_actions).to(device)
-        self.target_net.load_state_dict(self.policy_net.state_dict())
+        self.target_net.load_state_dict(self.q_network.state_dict())
         self.target_net.eval()
 
-        self.optimizer = torch.optim.Adam(self.policy_net.parameters(), lr=lr)
+        self.optimizer = torch.optim.Adam(self.q_network.parameters(), lr=lr)
         self.memory = []
         self.steps_done = 0
 
@@ -263,7 +265,7 @@ class DeepQLearningAgent:
             return random.choice(valid_actions)
         with torch.no_grad():
             state_tensor = self.preprocess(state)
-            q_values = self.policy_net(state_tensor).cpu().numpy().flatten()
+            q_values = self.q_network(state_tensor).cpu().numpy().flatten()
             # Selecciona la acción válida con mayor valor Q
             q_valid = [(a, q_values[a]) for a in valid_actions]
             best_action = max(q_valid, key=lambda x: x[1])[0]
@@ -304,7 +306,7 @@ class DeepQLearningAgent:
         dones = torch.tensor(dones, dtype=torch.float32, device=self.device).unsqueeze(1)
 
         # Q(s,a)
-        q_values = self.policy_net(states).gather(1, actions)
+        q_values = self.q_network(states).gather(1, actions)
         # max_a' Q_target(s',a')
         with torch.no_grad():
             next_q_values = self.target_net(next_states).max(1)[0].unsqueeze(1)
@@ -318,7 +320,7 @@ class DeepQLearningAgent:
         # Actualiza la red objetivo cada cierto número de pasos
         self.steps_done += 1
         if self.steps_done % self.target_update_every == 0:
-            self.target_net.load_state_dict(self.policy_net.state_dict())
+            self.target_net.load_state_dict(self.q_network.state_dict())
 
         return loss.item()
 

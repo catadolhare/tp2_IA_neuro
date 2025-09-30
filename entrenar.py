@@ -37,10 +37,13 @@ def entrenar(episodes:int=500,
         n_actions=env.cols,
         device=device,
         gamma=gamma, 
+        epsilon=epsilon_start,
+        epsilon_min=epsilon_min,
+        epsilon_decay=epsilon_decay,
         lr=alpha, 
         batch_size=batch_size, 
-        target_update_every=target_update_every, 
-        epsilon_decay=epsilon_decay
+        memory_size=memory_size,
+        target_update_every=target_update_every
     )
     
     # Entrenamiento
