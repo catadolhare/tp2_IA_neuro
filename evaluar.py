@@ -47,7 +47,7 @@ if __name__ == '__main__':
     # ---------------- CONFIGURACIÓN ----------------
     model_path = "trained_model_vs_None_1000_0.99_1.0_0.1_0.9950.001_128_1000_100.pth"  # cambia por tu archivo .pth
     opponent = "random"   # "random" o "defender"
-    episodes = 50         # número de partidas
+    episodes = 100         # número de partidas
     verbose = True        # True para mostrar el tablero en cada turno
     # ------------------------------------------------
 

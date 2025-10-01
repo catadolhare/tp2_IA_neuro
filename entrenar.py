@@ -111,7 +111,8 @@ if __name__ == '__main__':
     else: 
         agente_entrenado = None
 
-    # Llamar a la función principal con los argumentos proporcionados
+    # Llamar a la función principal con los argumentos proporcionados\
+    """
     entrenar(episodes=args.episodes, 
              gamma=args.gamma, 
              epsilon_start=args.epsilon_start, 
@@ -122,4 +123,29 @@ if __name__ == '__main__':
              memory_size=args.memory_size,
              target_update_every=args.target_update_every,
              opponent=agente_entrenado,
-             verbose=args.verbose)
+             verbose=args.verbose)"""
+
+
+    # Oponente al azar
+    opponent = RandomAgent("Random")
+
+    # Oponente defensor
+    # opponent = DefenderAgent("Defensor")
+
+    # Oponente entrenado previamente (otro .pth)
+    # opponent = TrainedAgent("modelo_previo.pth", state_shape=(6,7), n_actions=7)
+
+    entrenar(
+        episodes=1000,
+        gamma=0.99,
+        epsilon_start=1.0,
+        epsilon_min=0.1,
+        epsilon_decay=0.995,
+        alpha=0.001,
+        batch_size=128,
+        memory_size=1000,
+        target_update_every=100,
+        opponent=opponent,
+        verbose=True
+    )
+
