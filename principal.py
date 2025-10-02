@@ -351,6 +351,7 @@ class TrainedAgent(Agent):
         self.model.eval()
         self.state_shape = state_shape
         self.n_actions = n_actions
+        self.name = "TrainedAgent"
 
 
     def play(self, state, valid_actions): 
