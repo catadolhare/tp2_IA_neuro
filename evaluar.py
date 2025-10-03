@@ -1,54 +1,50 @@
 from connect4 import Connect4
-from agentes import RandomAgent, DefenderAgent
+from agentes import Agent, RandomAgent, DefenderAgent
 from principal import TrainedAgent
 
-def jugar(model_path, opponent_name="random", verbose=False, episodes=10):
-    """
-    Juega partidas entre un TrainedAgent y un oponente dado.
-    
-    Args:
-        model_path: ruta al archivo .pth entrenado.
-        opponent_name: 'random' o 'defender'
-        verbose: mostrar tablero durante el juego
-        episodes: número de partidas a jugar
-    """
-    # Crear agente entrenado
-    agente_entrenado = TrainedAgent(model_path, state_shape=(6,7), n_actions=7)
-
-    # Seleccionar oponente
-    if opponent_name.lower() == "random":
-        opponent = RandomAgent("Random")
-    elif opponent_name.lower() == "defender":
-        opponent = DefenderAgent("Defensor")
+def main(episodes=1000, verbose=False, trained_first=True, agent="random"):
+    agente_random: Agent = RandomAgent("Random")
+    agente_defensor: Agent = DefenderAgent("Defender")
+    agente_entrenado = TrainedAgent(
+        "grid_search_trained/trained_model_vs_Defensor_500_0.9_0.8_0.1_0.9950.0005_128_1000_100.pth",
+        state_shape=(6,7), n_actions=7
+    )
+    if agent == "defender":
+        if trained_first:
+            agent1 = agente_entrenado
+            agent2 = agente_defensor
+        else:
+            agent1 = agente_defensor
+            agent2 = agente_entrenado
     else:
-        raise ValueError("Oponente desconocido. Usa 'random' o 'defender'.")
+        if trained_first:
+            agent1 = agente_entrenado
+            agent2 = agente_random
+        else:
+            agent1 = agente_random
+            agent2 = agente_entrenado
 
-    # Estadísticas
-    wins, losses, draws = 0, 0, 0
+    print(f"Juego: {agent1.name} (Jugador 1) vs. {agent2.name} (Jugador 2)")
+
+    wins1, wins2, draws = 0, 0, 0
 
     for i in range(episodes):
-        game = Connect4(agent1=agente_entrenado, agent2=opponent)
-        winner = game.play(render=verbose)
+        juego = Connect4(agent1=agent1, agent2=agent2)
+        ganador = juego.play(render=verbose)
 
-        if winner == 1:  # agente entrenado es jugador 1
-            wins += 1
-        elif winner == 2:
-            losses += 1
-        else:
+        if ganador == 0:
             draws += 1
+        elif ganador == 1:
+            wins1 += 1
+        else:
+            wins2 += 1
 
-    print("\nResultados contra", opponent.name)
-    print(f"Partidas: {episodes}")
-    print(f"Ganadas: {wins} ({wins/episodes:.2%})")
-    print(f"Perdidas: {losses} ({losses/episodes:.2%})")
+    print("\nResultados finales:")
+    print(f"Total partidas: {episodes}")
+    print(f"{agent1.name} ganó {wins1} veces ({wins1/episodes:.2%})")
+    print(f"{agent2.name} ganó {wins2} veces ({wins2/episodes:.2%})")
     print(f"Empates: {draws} ({draws/episodes:.2%})")
 
 if __name__ == '__main__':
-    # ---------------- CONFIGURACIÓN ----------------
-    model_path = "trained_model_vs_None_1000_0.99_1.0_0.1_0.9950.001_128_1000_100.pth"  # cambia por tu archivo .pth
-    opponent = "random"   # "random" o "defender"
-    episodes = 100         # número de partidas
-    verbose = True        # True para mostrar el tablero en cada turno
-    # ------------------------------------------------
-
-    jugar(model_path, opponent_name=opponent, verbose=verbose, episodes=episodes)
+    # Configuración
+    main(episodes=10000, verbose=False, trained_first=True, agent="random")

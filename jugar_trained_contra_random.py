@@ -3,6 +3,7 @@ from connect4 import Connect4
 from agentes import Agent, DefenderAgent, HumanAgent, RandomAgent
 from principal import TrainedAgent
 
+# adaptamos el codigo de jugar_humano_contra_defensor.py para que juegue el agente entrenado contra el agente random
 def main(verbose, trained_first=True):
     agente_random:Agent = RandomAgent("Random")
     agente_entrenado = TrainedAgent("trained_model_vs_None_1000_0.99_1.0_0.1_0.9950.001_128_1000_100.pth", state_shape=(6,7), n_actions=7)

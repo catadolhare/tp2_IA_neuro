@@ -127,21 +127,21 @@ if __name__ == '__main__':
 
 
     # Oponente al azar
-    #opponent = RandomAgent("Random")
+    opponent = RandomAgent("Random")
 
     # Oponente defensor
     #opponent = DefenderAgent("Defensor")
 
     # El mismo
-    opponent = agente_entrenado
+    #opponent = agente_entrenado
 
     entrenar(
-        episodes=1000,
-        gamma=0.99,
-        epsilon_start=1.0,
+        episodes=5000,
+        gamma=0.9,
+        epsilon_start=0.8,
         epsilon_min=0.1,
         epsilon_decay=0.995,
-        alpha=0.001,
+        alpha=0.0005,
         batch_size=128,
         memory_size=1000,
         target_update_every=100,
