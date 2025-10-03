@@ -2,27 +2,27 @@ from connect4 import Connect4
 from agentes import Agent, RandomAgent, DefenderAgent
 from principal import TrainedAgent
 
-def main(episodes=100, verbose=False, trained_first=True):
-    #agente_random: Agent = RandomAgent("Random")
+def main(episodes=1000, verbose=False, trained_first=True, agent="random"):
+    agente_random: Agent = RandomAgent("Random")
     agente_defensor: Agent = DefenderAgent("Defender")
     agente_entrenado = TrainedAgent(
         "trained_model_vs_None_1000_0.99_1.0_0.1_0.9950.001_128_1000_100.pth",
         state_shape=(6,7), n_actions=7
     )
-
-    if trained_first:
-        agent1 = agente_entrenado
-        agent2 = agente_defensor
+    if agent == "defender":
+        if trained_first:
+            agent1 = agente_entrenado
+            agent2 = agente_defensor
+        else:
+            agent1 = agente_defensor
+            agent2 = agente_entrenado
     else:
-        agent1 = agente_defensor
-        agent2 = agente_entrenado
-    """
-    if trained_first:
-        agent1 = agente_entrenado
-        agent2 = agente_random
-    else:
-        agent1 = agente_random
-        agent2 = agente_entrenado"""
+        if trained_first:
+            agent1 = agente_entrenado
+            agent2 = agente_random
+        else:
+            agent1 = agente_random
+            agent2 = agente_entrenado
 
     print(f"Juego: {agent1.name} (Jugador 1) vs. {agent2.name} (Jugador 2)")
 
@@ -47,4 +47,4 @@ def main(episodes=100, verbose=False, trained_first=True):
 
 if __name__ == '__main__':
     # Configuración
-    main(episodes=1000, verbose=False, trained_first=True)
+    main(episodes=10000, verbose=False, trained_first=True, agent="random")

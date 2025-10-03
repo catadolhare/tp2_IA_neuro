@@ -28,21 +28,21 @@ class Connect4State:
         new_state.current_player = self.current_player
         return new_state
 
-    """def update_state(self):
-        """"""
+
+    def update_state(self, col): #chat me dice que falta agregarle col para poder marcar donde se jugo
+        """
         Modifica las variables internas del estado luego de una jugada.
 
         Args:
             ... (_type_): _description_
             ... (_type_): _description_
-        """"""
-        self.current_player = 2 if self.current_player == 1 else 1"""
-
-    def update_state(self, col): #chat me dice que falta agregarle col para poder marcar donde se jugo
+        """
+        if not (0 <= col < self.board.shape[1]):
+            raise ValueError("Columna inválida")
         for row in range(5, -1, -1):
             if self.board[row, col] == 0:
                 self.board[row, col] = self.current_player
-                self.current_player *= -1
+                self.current_player = 1 if self.current_player == -1 else -1
                 return
         raise ValueError("Columna llena")
 
@@ -108,7 +108,7 @@ class Connect4Environment:
         """
         indices_col = []
         for col in range(self.state.board.shape[1]):
-            if self.state.board[0, col] == 0:
+            if self.state.board[0, col] == 0: # Si la fila superior está vacía, la columna es válida
                 indices_col.append(col)
         return indices_col
 
@@ -132,7 +132,10 @@ class Connect4Environment:
         self.done = self.winner is not None or len(self.available_actions()) == 0
         reward = 0
         if self.winner is not None:
-            reward = 1
+            if self.winner == 1:
+                reward = 1
+            else:
+                reward = -1
         elif self.done:
             reward = 0.5  # Empate
         return self.state.copy(), reward, self.done, self.winner
@@ -179,8 +182,11 @@ class DQN(nn.Module):
         """
         super(DQN, self).__init__()
         self.fc1 = nn.Linear(input_dim, 128)
-        self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, output_dim)
+        self.fc2 = nn.Linear(128, 256)
+        self.fc3 = nn.Linear(256, 512)
+        self.fc4 = nn.Linear(512, 256)
+        self.fc5 = nn.Linear(256, 128)
+        self.fc6 = nn.Linear(128, output_dim)
 
     def forward(self, x):
         """
@@ -194,7 +200,10 @@ class DQN(nn.Module):
         """
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = F.relu(self.fc3(x))
+        x = F.relu(self.fc4(x))
+        x = F.relu(self.fc5(x))
+        x = self.fc6(x)
         return x
 
 class DeepQLearningAgent:
