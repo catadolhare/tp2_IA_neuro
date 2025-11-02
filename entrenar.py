@@ -23,7 +23,7 @@ def entrenar(episodes:int=500,
         Si opponent==None, entrena jugando contra sí mismo. '''
 
     nombre_oponente:str = 'None' if opponent==None else opponent.name
-    model_name:str = f"trained_model_vs_{nombre_oponente}_{episodes}_{gamma}_" + \
+    model_name:str = f"NUEVOtrained_model_vs_{nombre_oponente}_{episodes}_{gamma}_" + \
                      f"{epsilon_start}_{epsilon_min}_{epsilon_decay}" + \
                      f"{alpha}_{batch_size}_{memory_size}_{target_update_every}"
     if verbose: print(model_name, flush=True)
@@ -81,7 +81,7 @@ def entrenar(episodes:int=500,
     
     torch.save(agent.q_network.state_dict(), f"{model_name}.pth")
 
-
+#entrenamos con los mejores hiperparametros encontrados
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Entrenar un agente usando DQL en el ambiente de 'Connect4'.")
 
@@ -111,32 +111,13 @@ if __name__ == '__main__':
     else: 
         agente_entrenado = None
 
-    # Llamar a la función principal con los argumentos proporcionados\
-    """
-    entrenar(episodes=args.episodes, 
-             gamma=args.gamma, 
-             epsilon_start=args.epsilon_start, 
-             epsilon_min=args.epsilon_min, 
-             epsilon_decay=args.epsilon_decay,
-             alpha=args.alpha,
-             batch_size=args.batch_size, 
-             memory_size=args.memory_size,
-             target_update_every=args.target_update_every,
-             opponent=agente_entrenado,
-             verbose=args.verbose)"""
-
-
-    # Oponente al azar
-    opponent = RandomAgent("Random")
 
     # Oponente defensor
-    #opponent = DefenderAgent("Defensor")
+    opponent = DefenderAgent("Defensor")
 
-    # El mismo
-    #opponent = agente_entrenado
 
     entrenar(
-        episodes=5000,
+        episodes=500,
         gamma=0.9,
         epsilon_start=0.8,
         epsilon_min=0.1,

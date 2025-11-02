@@ -30,5 +30,5 @@ class Connect4:
 
         if render: self.env.render()
 
-        winner = self.env.winner
-        return winner if winner is not None else 0
+        winner:int = info["winner"]
+        return winner
