@@ -5,16 +5,16 @@ import argparse
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def entrenar(episodes:int=500,
-             gamma:float=0.99, 
-             epsilon_start:float=1.0, 
+def entrenar(episodes:int=1000,
+             gamma:float=0.95, 
+             epsilon_start:float=0.8, 
              epsilon_min:float=0.1, 
              epsilon_decay:float=0.995,
-             alpha:float=0.001,
-             batch_size:int=64, 
-             memory_size:int=500,
+             alpha:float=0.005,
+             batch_size:int=128, 
+             memory_size:int=1000,
              target_update_every:int=100,
-             opponent:Agent=None,
+             opponent:Agent=DefenderAgent("Defensor"),
              verbose:bool=True):
 
     ''' Entrenar un Agente DQN en la cantidad de episodios y con los 
@@ -23,7 +23,7 @@ def entrenar(episodes:int=500,
         Si opponent==None, entrena jugando contra sí mismo. '''
 
     nombre_oponente:str = 'None' if opponent==None else opponent.name
-    model_name:str = f"NUEVOtrained_model_vs_{nombre_oponente}_{episodes}_{gamma}_" + \
+    model_name:str = f"trained_model_vs_{nombre_oponente}_{episodes}_{gamma}_" + \
                      f"{epsilon_start}_{epsilon_min}_{epsilon_decay}" + \
                      f"{alpha}_{batch_size}_{memory_size}_{target_update_every}"
     if verbose: print(model_name, flush=True)
@@ -118,15 +118,14 @@ if __name__ == '__main__':
 
     entrenar(
         episodes=500,
-        gamma=0.9,
-        epsilon_start=0.8,
+        gamma=0.95,
+        epsilon_start=0.7,
         epsilon_min=0.1,
         epsilon_decay=0.995,
-        alpha=0.0005,
+        alpha=0.001,
         batch_size=128,
         memory_size=1000,
         target_update_every=100,
-        opponent=opponent,
+        opponent=DefenderAgent("Defensor"),
         verbose=True
     )
-

@@ -96,7 +96,7 @@ if __name__ == '__main__':
     
     alphas=[0.001, 0.0005, 0.0001]
     gammas=[0.90, 0.95, 0.99]
-    epsilons=[1.0, 0.8, 0.5]
+    epsilons=[1.0, 0.8, 0.7]
     episodes=500          
     batch_size=128
     memory_size=1000

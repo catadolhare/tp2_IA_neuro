@@ -10,12 +10,14 @@
 
 \geometry{margin=2cm}
 
-\title{\textbf{Trabajo Práctio 2 - Aprendizaje por Refuerzo} \\ Inteligencia Artificial y Neurociencias}
+\title{\textbf{Trabajo Práctio 2 - Aprendizaje por Refuerzo} \vspace{-0.5cm}}
 \author{Camila Cauzzo, Catalina Dolhare, Joaquin Schanz}
+\date{}
 
 \begin{document}
 
 \maketitle
+\vspace{-1cm}
 
 \section{Introducción}
 
@@ -26,7 +28,7 @@ El objetivo principal fue desarrollar y entrenar una red neuronal profunda que a
 \section{Decisiones de Arquitectura}
 
 \subsection{Red Neuronal (DQN)}
-Se implementó una red neuronal profunda con la siguiente arquitectura:
+Luego de experimentar con varias redes neuronales, se implementó una red neuronal profunda con la siguiente arquitectura:
 
 \begin{itemize}
     \item \textbf{Capa de entrada:} 42 neuronas (tablero $6 \times 7$ aplanado)
@@ -37,75 +39,78 @@ Se implementó una red neuronal profunda con la siguiente arquitectura:
 
 \textbf{Justificación:} La arquitectura profunda con disminución gradual de neuronas permite capturar patrones complejos del juego mientras reduce la dimensionalidad progresivamente. Se optó por una red más profunda que ancha para capturar jerarquías de características estratégicas.
 
-\section{Implementación}
-
-Para facilitar el desarrollo y experimentación del agente, se implementaron dos componentes clave:
-
-\subsection{Sistema de Evaluación}
-Se desarrolló un módulo de evaluación (\texttt{evaluar.py}) que permite medir objetivamente el desempeño del agente entrenado. Este sistema enfrenta al agente DQN contra oponentes de control (RandomAgent y DefenderAgent) en un número configurable de partidas, registrando victorias, derrotas y empates. Esta herramienta fue fundamental para comparar diferentes configuraciones de hiperparámetros de manera sistemática.
-
-\subsection{Grid Search Automatizado}
-Se implementó un script de grid search completo (\texttt{entrenar\_y\_evaluar\_grid\_search.py}) que automatiza el proceso de entrenamiento y evaluación para todas las combinaciones de hiperparámetros. El sistema:
-
-\begin{itemize}
-    \item Entrena un modelo DQN para cada configuración de hiperparámetros
-    \item Evalúa automáticamente el desempeño contra RandomAgent (1000 partidas)
-    \item Registra los resultados en un archivo CSV para análisis posterior
-    \item \textbf{Guarda únicamente el mejor modelo} basándose en el porcentaje de victorias, optimizando el uso de almacenamiento
-\end{itemize}
-
-Esta implementación permitió explorar eficientemente el espacio de hiperparámetros y identificar la configuración óptima de manera empírica y reproducible.
-
 \section{Grid Search de Hiperparámetros}
 
-Se realizó una búsqueda exhaustiva sobre \textbf{192 configuraciones diferentes}.
+Se implementó un grid search automatizado utilizando \texttt{entrenar.py} para entrenar modelos con diferentes configuraciones de hiperparámetros. Cada modelo fue evaluado con \texttt{evaluar.py}, una adaptación de \texttt{jugar\_humano\_contra\_defensor.py} que permite medir objetivamente el desempeño contra oponentes de control en múltiples partidas.
+
+\subsection{Implementación}
+
+Se realizó una búsqueda exhaustiva sobre \textbf{81 configuraciones diferentes}.
 
 \subsection{Espacio de Búsqueda}
 \begin{itemize}
-    \item \textbf{Learning rate} ($\alpha$): [0.0001, 0.0005, 0.001, 0.005]
-    \item \textbf{Factor de descuento} ($\gamma$): [0.9, 0.95, 0.98, 0.99]
-    \item \textbf{Epsilon inicial} ($\epsilon_0$): [0.7, 0.8, 0.9, 1.0]
+    \item \textbf{Learning rate} ($\alpha$): [0.0001, 0.0005, 0.001]
+    \item \textbf{Factor de descuento} ($\gamma$): [0.9, 0.95, 0.99]
+    \item \textbf{Epsilon inicial} ($\epsilon_0$): [0.7, 0.8, 1.0]
     \item \textbf{Oponentes de entrenamiento:} [None (auto-juego), RandomAgent, DefenderAgent]
 \end{itemize}
 
+Esto resulta en $3 \times 3 \times 3 \times 3 = 81$ configuraciones diferentes.
+
 \subsection{Parámetros Fijos}
-Episodios de entrenamiento: 1000, $\epsilon_{min} = 0.1$, $\epsilon_{decay} = 0.995$, batch size: 128, tamaño de memoria: 1000, actualización de target network: cada 100 pasos.
+Episodios de entrenamiento: 500, $\epsilon_{min} = 0.1$, $\epsilon_{decay} = 0.995$, batch size: 128, tamaño de memoria: 1000, actualización de target network: cada 100 pasos.
 
 \section{Resultados Obtenidos}
 
 \subsection{Mejor Modelo}
-El modelo con \textbf{mejor desempeño} logró \textbf{92.7\% de victorias} contra RandomAgent:
+El modelo con \textbf{mejor desempeño} logró \textbf{88.9\% de victorias} contra RandomAgent:
 
 \begin{center}
 \begin{tabular}{ll}
 \toprule
 \textbf{Hiperparámetro} & \textbf{Valor} \\
 \midrule
-Learning rate ($\alpha$) & 0.005 \\
+Learning rate ($\alpha$) & 0.001 \\
 Factor de descuento ($\gamma$) & 0.95 \\
-Epsilon inicial ($\epsilon_0$) & 0.8 \\
+Epsilon inicial ($\epsilon_0$) & 0.7 \\
 Oponente de entrenamiento & DefenderAgent \\
 \midrule
-\textbf{Resultado} & \textbf{92.7\% W / 7.3\% L / 0\% D} \\
+\textbf{Resultado} & \textbf{87.12\% W / 12.88\% L / 0\% D} \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{Top 5 Configuraciones}
-\begin{enumerate}
-    \item \textbf{92.7\%} -- $\alpha=0.005$, $\gamma=0.95$, $\epsilon_0=0.8$, vs Defensor
-    \item \textbf{92.7\%} -- $\alpha=0.005$, $\gamma=0.98$, $\epsilon_0=0.7$, vs Defensor
-    \item \textbf{91.1\%} -- $\alpha=0.005$, $\gamma=0.95$, $\epsilon_0=0.7$, vs Defensor
-    \item \textbf{88.1\%} -- $\alpha=0.005$, $\gamma=0.9$, $\epsilon_0=0.9$, vs Defensor
-    \item \textbf{87.9\%} -- $\alpha=0.005$, $\gamma=0.98$, $\epsilon_0=1.0$, vs Random
-\end{enumerate}
+\subsection{Análisis de Resultados del Grid Search}
 
-\section{Conclusiones}
+Del análisis de las 81 configuraciones evaluadas en \texttt{resultados\_evaluacion.csv}, se observaron los siguientes patrones:
 
-El desarrollo de este trabajo práctico permitió construir un agente capaz de jugar al Connect4 utilizando Deep Q-Learning. Partimos de la definición del ambiente y la representación del estado, acciones y recompensas, y diseñamos una red neuronal profunda para aproximar la función de valor de acción $Q(s,a)$. Mediante entrenamiento con memoria de replay, actualización de red objetivo y política $\epsilon$-greedy, el agente aprendió estrategias efectivas tanto de ataque como de defensa.
+\begin{itemize}
+    \item \textbf{Impacto del oponente de entrenamiento:} Los modelos entrenados contra DefenderAgent mostraron en general mejor desempeño que aquellos entrenados con auto-juego (None) o contra RandomAgent.
 
-Tras probar múltiples configuraciones de hiperparámetros y oponentes a través de un grid search exhaustivo (192 configuraciones), se identificó que: (1) un learning rate relativamente alto ($\alpha=0.005$) es esencial para convergencia efectiva, (2) entrenar contra oponentes con estrategia básica (DefenderAgent) produce mejores políticas que auto-juego o adversarios aleatorios, y (3) factores de descuento medios-altos ($\gamma=0.95-0.98$) balancean adecuadamente recompensas inmediatas y futuras.
+    \item \textbf{Learning rate:} Los valores de learning rate mostraron resultados variables. Si bien el mejor modelo utilizó $\alpha=0.001$, se observaron buenos resultados también con las otras opciones posibles. 
 
-El modelo más robusto alcanzó un 92.7\% de victorias frente a agentes aleatorios, demostrando que el aprendizaje se traduce en victorias sostenidas. La evaluación mediante partidas de prueba permitió comprobar la efectividad del agente y confirmar que la combinación de Deep Q-Learning con un diseño cuidadoso del ambiente y de la política de exploración puede generar agentes competentes en juegos estratégicos de dos jugadores.
+    \item \textbf{Factor de descuento:} Los tres valores explorados ($\gamma=0.9, 0.95, 0.99$) produjeron modelos competitivos.
+
+    \item \textbf{Epsilon inicial:} La exploración inicial moderada ($\epsilon_0=0.7$) demostró ser más efectiva que valores más altos. Los mejores modelos utilizaron consistentemente $\epsilon_0=0.7$ o $\epsilon_0=0.8$.
+
+\end{itemize}
+
+
+\section{Conclusiones y Limitaciones}
+
+El desarrollo de este trabajo práctico permitió construir un agente capaz de jugar al Connect4 utilizando Deep Q-Learning. Tras probar múltiples configuraciones de hiperparámetros y oponentes a través de un grid search exhaustivo (81 configuraciones evaluadas), se identificó que: (1) un learning rate moderado ($\alpha=0.001$) permite una convergencia efectiva sin inestabilidad, (2) entrenar contra oponentes con estrategia básica (DefenderAgent) produce mejores políticas que auto-juego o adversarios aleatorios, y (3) factores de descuento medios-altos ($\gamma=0.95$) balancean adecuadamente recompensas inmediatas y futuras.
+
+El modelo más robusto alcanzó un 87.12\% de victorias frente a agentes aleatorios, demostrando que el aprendizaje se traduce en victorias sostenidas. La evaluación mediante partidas de prueba permitió comprobar la efectividad del agente y confirmar que la combinación de Deep Q-Learning con un diseño cuidadoso del ambiente y de la política de exploración puede generar agentes competentes en juegos estratégicos de dos jugadores.
+
+Sin embargo, encontramos algunas limitaciones importantes:
+
+\begin{itemize}
+    \item \textbf{Ventaja del primer jugador:} En todas las evaluaciones, el agente entrenado jugó siempre en la primera posición. En Connect4, el primer jugador tiene una ventaja estratégica, por lo que los porcentajes de victoria reportados pueden estar inflados. Una evaluación más robusta requeriría alternar las posiciones de juego o evaluar el desempeño en ambas posiciones por separado.
+
+    \item \textbf{Espacio de hiperparámetros limitado:} Aunque se exploraron 81 configuraciones diferentes, el espacio de hiperparámetros fue relativamente acotado. En particular, solo se probaron tres valores para cada hiperparámetro continuo. Es probable que existan combinaciones óptimas en regiones no exploradas del espacio de búsqueda.
+
+    \item \textbf{Duración del entrenamiento:} Los modelos fueron entrenados con 500 episodios, lo cual puede ser insuficiente para la convergencia completa en un juego de esta complejidad. Entrenamientos más prolongados (1000-5000 episodios) podrían revelar mejoras significativas en el desempeño.
+
+\end{itemize}
 
 \end{document}

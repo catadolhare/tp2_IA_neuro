@@ -6,7 +6,7 @@ def main(episodes=1000, verbose=False, trained_first=True, agent="random"):
     agente_random: Agent = RandomAgent("Random")
     agente_defensor: Agent = DefenderAgent("Defender")
     agente_entrenado = TrainedAgent(
-        "best_model\opcion2trained_model_vs_Defensor_500_0.9_0.7_0.1_0.9950.005_128_1000_100.pth",
+        "trained_model_vs_Defensor_500_0.95_0.7_0.1_0.9950.001_128_1000_100.pth",
         state_shape=(6,7), n_actions=7
     )
     if agent == "defender":
