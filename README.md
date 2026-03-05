@@ -19,6 +19,7 @@ El objetivo fue entrenar un modelo capaz de aprender estrategias competitivas me
 
 ## Estructura del repositorio
 
+- `principal.py` – Implementación central del entorno y del agente de Deep Q-Learning (estado del juego, entorno, red DQN, agente de entrenamiento y agente entrenado).
 - `connect4.py` – Implementación del entorno del juego Connect4.
 - `agentes.py` – Definición de los distintos agentes que interactúan con el entorno.
 - `entrenar.py` – Script principal para entrenar el modelo.
@@ -27,6 +28,8 @@ El objetivo fue entrenar un modelo capaz de aprender estrategias competitivas me
 - `evaluar_grid_search.py` – Comparación de resultados obtenidos en el grid search.
 - `jugar_humano_contra_defensor.py` – Permite jugar contra un agente defensor.
 - `jugar_trained_contra_random.py` – Partidas entre el agente entrenado y un agente aleatorio.
+- `utils.py` – Funciones auxiliares (creación de tablero, acciones válidas, chequeo de victoria, etc.).
+- `utils_testing.py` – Utilidades / helpers para testing.
 - `grid_search_trained/` – Modelos entrenados con distintas configuraciones.
 - `informe/` – Informe técnico del proyecto.
 
