@@ -19,12 +19,16 @@ El objetivo fue entrenar un modelo capaz de aprender estrategias competitivas me
 
 ## Estructura del repositorio
 
-- `connect4.py` – Implementación del entorno del juego.
-- `agentes.py` – Definición de los distintos agentes.
-- `entrenar.py` – Script principal de entrenamiento.
-- `evaluar.py` – Evaluación del modelo entrenado.
-- `entrenar_grid_search.py` – Búsqueda de hiperparámetros.
-- `grid_search_trained/` – Modelos entrenados.
+- `connect4.py` – Implementación del entorno del juego Connect4.
+- `agentes.py` – Definición de los distintos agentes que interactúan con el entorno.
+- `entrenar.py` – Script principal para entrenar el modelo.
+- `evaluar.py` – Evaluación del desempeño del agente entrenado.
+- `entrenar_grid_search.py` – Ejecución de múltiples entrenamientos variando hiperparámetros.
+- `evaluar_grid_search.py` – Comparación de resultados obtenidos en el grid search.
+- `jugar_humano_contra_defensor.py` – Permite jugar contra un agente defensor.
+- `jugar_trained_contra_random.py` – Partidas entre el agente entrenado y un agente aleatorio.
+- `grid_search_trained/` – Modelos entrenados con distintas configuraciones.
+- `informe/` – Informe técnico del proyecto.
 
 ---
 
